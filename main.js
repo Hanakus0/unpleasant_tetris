@@ -36,7 +36,9 @@ function init() {
     }
     field.push(rowAry);
   }
+  field[5][7] = 1; //TODO:delete
 }
+
 
 /**
  * プロセス
@@ -72,6 +74,27 @@ function drawAll(){
   }
 };
 
+// 当たり判定
+function checkMove(moveX, moveY) {
+  for(let y = 0; y < tetro.length; y++ ){
+    for(let x = 0; x < tetro[y].length; x++ ){
+      let nextX = tetro_x + moveX + x;
+      let nextY = tetro_y + moveY + y;
+      // テトロミノ内で 1 かどうか
+      if(tetro[y][x]){
+        // 衝突すると判定された場合 false
+        // 最低値・最高値を超えていないか→ブロックが存在しないかで確認
+        if( nextX < 0          || // X最低値オーバー
+            nextX >= FIELD_COL || // X最高値オーバー
+            nextY < 0          || // Y最低値オーバー
+            nextY >= FIELD_ROW || // Y最高値オーバー
+            field[nextY][nextX]   // 移動後の座標に 1 が存在するか
+        ) return false;
+      }
+    }
+  }
+  return true;
+}
 
 // コントローラー
 // 十字キーでの操作
@@ -80,26 +103,27 @@ document.onkeydown = function(e){
     // →
     case "ArrowRight":
       console.log("Right");
-      tetro_x++;
+      if ( checkMove(1, 0) ) tetro_x++;
       break;
     // ↓
     case "ArrowDown":
       console.log("Down");
-      tetro_y++;
+      if ( checkMove(0, 1) ) tetro_y++;
       break;
     // ←
     case "ArrowLeft":
       console.log("Left");
-      tetro_x--;
+      if ( checkMove(-1, 0) ) tetro_x--;
       break;
     // ↑
     case "ArrowUp":
       console.log("Up");
-      tetro_y--;
+      if ( checkMove(0, -1) ) tetro_y--;
       break;
     // スペース
     case " ":
       console.log("␣");
+      if ( checkMove(-1, 0) )
       break;
   }
 
