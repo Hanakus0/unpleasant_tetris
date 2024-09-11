@@ -1,12 +1,8 @@
 'use strict'
 
-import { drawBlock } from './modules/parentModule.js';
 import { BLOCK_SIZE, DEFAULT_GAME_SPEED, FIELD_COL, FIELD_ROW, SCREEN_W, SCREEN_H } from './modules/parentModule.js';
+import { BASIC_TETRO_SIZE, TETRO_TYPES, TETRO_COLORS  } from './modules/parentModule.js';
 
-// テトロミノの落下速度
-let nowGameSpeed = DEFAULT_GAME_SPEED;
-
-/** パラメータ*/
 // `canvas`要素の取得および2d指定
 let can = document.getElementById('can');
 let context = can.getContext('2d');
@@ -14,134 +10,126 @@ let context = can.getContext('2d');
 can.width = SCREEN_W;
 can.height = SCREEN_H;
 can.style.border = "4px solid #898989";
+// スタートボタン取得
+const START_BTN = document.getElementById('start');
+const GAME_OVER = document.getElementById('gameover');
+const SCORE = document.getElementById('score');
+const BEFORE_SCORE = document.getElementById('before_score');
+BEFORE_SCORE.textContent = localStorage.getItem('BEFORE_SCORE') || 0;
 
-// テトロミノのグリッド (ブロック部分 = １)
-const TETRO_TYPES = [
-	[],	// 0.空っぽ(ブロックの存在有無を 0/1 で判定しているため`0`を利用すると都合が悪い)
-	[					// 1.I
-		[ 0, 0, 0, 0 ],
-		[ 1, 1, 1, 1 ],
-		[ 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0 ]
-	],
-	[					// 2.L
-		[ 0, 1, 0, 0 ],
-		[ 0, 1, 0, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 0, 0, 0, 0 ]
-	],
-	[					// 3.J
-		[ 0, 0, 1, 0 ],
-		[ 0, 0, 1, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 0, 0, 0, 0 ]
-	],
-	[					// 4.T
-		[ 0, 1, 0, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 0, 1, 0, 0 ],
-		[ 0, 0, 0, 0 ]
-	],
-	[					// 5.O
-		[ 0, 0, 0, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 0, 0, 0, 0 ]
-	],
-	[					// 6.Z
-		[ 0, 0, 0, 0 ],
-		[ 1, 1, 0, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 0, 0, 0, 0 ]
-	],
-	[					// 7.S
-		[ 0, 0, 0, 0 ],
-		[ 0, 1, 1, 0 ],
-		[ 1, 1, 0, 0 ],
-		[ 0, 0, 0, 0 ]
-	]
-];
-
+/** ゲームパラメータ*/
+// 初回プレイフラグ
+let firstPlayFlg = true;
+// ゲームオーバーフラグ
+let overFlg = false;
+// テトロミノの落下速度
+let nowGameSpeed = DEFAULT_GAME_SPEED;
+// 消したラインおよびスコア用
+let lineCount = 0;
+//テトロミノのサイズ
+let tetroSize = BASIC_TETRO_SIZE;
+// テトロミノの座標
+const START_X = FIELD_COL/2 - tetroSize/2;
+const START_Y = 0;
 // 操作中のテトロミノ
 let tetro;
 // テトロミノの種類(TETRO_TYPES:0-6)
 let tetroType;
-// ゲームオーバーフラグ
-let overFlg = false;
 
-
-// テトロミノの座標
-const START_X = FIELD_COL/2 - TETRO_TYPES[1][0].length/2;
-const START_Y = 0;
+// 開始位置のテトロミノの座標
 let tetro_x = START_X;
 let tetro_y = START_Y;
 
-// フィールド本体
-// 一次元
 let field = [];
 tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1; // 0-6(+1)をしない
 tetro = TETRO_TYPES[tetroType];
 
+
+/**
+ * プロセス
+*/
+
+/** 描画処理 */
+// スタートボタン押下後
+START_BTN.onclick = function(){
+  if(!firstPlayFlg) endProcess().then(() => window.location.reload());
+  START_BTN.style.visibility = "hidden";
+  GAME_OVER.style.visibility = "hidden";
+  init();
+  drawAll();
+  // nowGameSpeed 毎にテトロミノを落下させる
+  setInterval( dropTetro, nowGameSpeed );
+}
+
+
+// ゲーム終了後の処理およびリロード
+async function endProcess() {
+  // let playerName = await window.prompt("（３文字）ユーザー名を入力してください", "")
+  // await localStorage.setItem(playerName.slice(0, 3), lineCount);
+  await localStorage.setItem("BEFORE_SCORE", lineCount * 100);
+}
+
+// フィールド本体
 function init() {
-  // 二次元
+  // 一次元
   for(let row = 0; row < FIELD_ROW; row++){
     let rowAry = [];
+    // 二次元
     for(let col = 0; col < FIELD_COL; col++){
       rowAry.push(0);
     }
     field.push(rowAry);
   }
-  field[5][7] = 1; //TODO:delete
 }
 
+//ブロック一つを描画する
+function drawBlock(x,y,c)
+{
+	let px = x * BLOCK_SIZE;
+	let py = y * BLOCK_SIZE;
+	context.fillStyle=TETRO_COLORS[c];
+	context.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
+	context.strokeStyle="black";
+	context.strokeRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
+}
 
-/**
- * プロセス
- */
-/** 描画処理 */
-init();
-drawAll();
-
-// nowGameSpeed 毎にテトロミノを落下させる
-setInterval( dropTetro, nowGameSpeed );
-
+/** フィールドの描画 */
 function drawAll(){
+  SCORE.textContent = "SCORE : " + lineCount * 100;
+
   // 画面クリア
   context.clearRect(0, 0, SCREEN_W, SCREEN_H);
 
-  /** フィールドの描画 */
-  for(let y = 0; y < field.length; y++ ){
-    for(let x = 0; x < field[0].length; x++ ){
+  for(let y = 0; y < FIELD_ROW; y++ ){
+    for(let x = 0; x < FIELD_COL; x++ ){
       // 1 (ブロック部分) ならば描画
       if(field[y][x]){
         // ブロックの描画
-        // drawBlock(x, y, context, BLOCK_SIZE, tetroType);
-        drawBlock(x, y, context, BLOCK_SIZE, field[y][x]);
+        // ドロップ後は色情報をフィールドに代入
+        drawBlock(x,y,field[y][x]);
       }
     }
   }
 
   /** テトロミノの描画 */
-  for(let y = 0; y < tetro.length; y++ ){
-    for(let x = 0; x < tetro[y].length; x++ ){
+  for(let y=0; y<tetroSize ; y++ ){
+    for(let x=0; x<tetroSize ; x++ ){
       // 1 (ブロック部分) ならば描画
       if(tetro[y][x]){
         // ブロックの描画
-        drawBlock(tetro_x+x, tetro_y+y, context, BLOCK_SIZE, tetroType);
+        drawBlock(tetro_x+x, tetro_y+y, tetroType);
       }
     }
   }
-
+  // ゲーム進行確認
   if(overFlg){
-    let str = "GAME OVER";
-    context.font = "40px 'MS ゴシック'";
-    let w = context.measureText(str).width;
-    let x = SCREEN_W/2 - w/2;
-    let y = SCREEN_H/2 -20;
-    context.lineWidth = 4;
-    context.strokeText(str, x, y);
-    context.fillStyle = "white";
-    context.fillText(str, x, y);
+    // スタートボタン再表示
+    START_BTN.textContent = 'RETRY';
+    START_BTN.style.visibility = "visible";
+    firstPlayFlg = false;
+    
+    // ゲームオーバー表示
+    GAME_OVER.style.visibility = "visible";
   }
 };
 
@@ -153,8 +141,8 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
   if (rotatedTetro) movedTetro = rotatedTetro;
 
   // 座標での移動可否の判定処理
-  for(let y = 0; y < tetro.length; y++ ){
-    for(let x = 0; x < tetro[0].length; x++ ){
+  for(let y = 0; y < tetroSize; y++ ){
+    for(let x = 0; x < tetroSize; x++ ){
       // テトロミノ内で 値があるか どうか
       if(movedTetro[y][x]){
         let nextX = tetro_x + moveX + x;
@@ -163,7 +151,7 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
         // 最低値・最高値を超えていないか→ブロックが存在しないかで確認
         if( nextX < 0          || // X最低値オーバー
             nextX >= FIELD_COL || // X最高値オーバー
-            nextY < 0          || // Y最低値オーバー
+            nextY < -1          || // Y最低値オーバー
             nextY >= FIELD_ROW || // Y最高値オーバー
             field[nextY][nextX]   // 移動後の座標に 1 が存在するか
         ) return false;
@@ -176,7 +164,6 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
 
 // テトロミノの回転
 // 現テトロミノを別配列にコピー
-// テトロの回転
 function rotateTetro() {
   let newTetro = [];
   for(let y = 0; y < tetro.length; y++){
@@ -190,12 +177,12 @@ function rotateTetro() {
   }
   return newTetro;
 }
-
+// テトロミノのドロップ後の固定
 function fixTetro() {
   // 1次元配列
-  for(let y = 0; y < tetro.length; y++){
+  for(let y = 0; y < tetroSize; y++){
     // 2次元配列
-    for(let x = 0; x < tetro[0].length; x++ ){
+    for(let x = 0; x < tetroSize; x++ ){
       if(tetro[y][x]){
         // 着地時点の座標からテトロミノの描画をするイメージ
         field[tetro_y + y][tetro_x + x] = tetroType
@@ -206,7 +193,6 @@ function fixTetro() {
 
 // ラインがそろったかチェック
 function checkLine(){
-  let lineCount; // 消したラインおよびスコアのカウント
   // 1次元配列
   for(let y = 0; y < FIELD_ROW; y++){
     // 2次元配列
@@ -220,7 +206,7 @@ function checkLine(){
     }
     // ラインが全て 1 の場合削除処理
     if(flag){
-      linec++;
+      lineCount++;
 
       for(let newY = y; newY > 0; newY--){
         for(let newX = 0; newX < FIELD_COL; newX++){
@@ -243,8 +229,6 @@ function dropTetro(){
     // 次のテトロミノへの準備
     fixTetro();
     checkLine();
-    // tetro_x = 0;
-    // tetro_y = 0;
     // 次のテトロミノを設定
     tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1;
     tetro = TETRO_TYPES[tetroType];
