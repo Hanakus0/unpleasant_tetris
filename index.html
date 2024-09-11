@@ -21,13 +21,15 @@
       font-weight:bold;
       margin: 0px 0px 15px 0px;
     }
-    #high_score_table {
+    #now_score_table {
+      user-select: none;
       margin: 0px 0px 15px 0px;
     }
     #before_score_table {
+      user-select: none;
       margin: 30px 0px;
     }
-    #user_name, #high_score{
+    #user_name, #now_score{
       user-select: none;
       color:#ff0000;
       font-size:20px;
@@ -98,7 +100,7 @@
 <body>    <!-- ゲーム画面 -->
   <!-- <button id="exit" onclick="over()">×</button>   -->
   <div>
-    <table id="high_score_table">
+    <table id="now_score_table">
       <thead>
         <tr>
           <th scope="col">あなたのスコア</th>
@@ -147,12 +149,14 @@
       <table id="before_score_table">
         <thead>
           <tr>
+            <th scope="col">#</th>
             <th scope="col">あなたの前回プレイ時のスコア</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <th id="before_score" scope="row"></th>
+            <th id="play_num" scope="row"></th>
+            <td id="before_score"></td>
           </tr>
         </tbody>
       </table>

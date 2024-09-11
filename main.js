@@ -14,11 +14,17 @@ can.style.border = "4px solid #898989";
 const START_BTN = document.getElementById('start');
 const GAME_OVER = document.getElementById('gameover');
 const SCORE = document.getElementById('score');
+// 前回プレイ
+const PLAY_NUM = document.getElementById('play_num');
+let playNumber = localStorage.getItem('PLAY_NUM');
+PLAY_NUM.textContent = playNumber;
 // 前回スコア
 const BEFORE_SCORE = document.getElementById('before_score');
 BEFORE_SCORE.textContent = localStorage.getItem('BEFORE_SCORE') || 0;
 
 /** ゲームパラメータ*/
+// 初回プレイフラグ
+let intervalID;
 // 初回プレイフラグ
 let firstPlayFlg = true;
 // ゲームオーバーフラグ
@@ -59,7 +65,7 @@ START_BTN.onclick = function(){
   init();
   drawAll();
   // nowGameSpeed 毎にテトロミノを落下させる
-  setInterval( dropTetro, nowGameSpeed );
+  intervalID = setInterval( dropTetro, nowGameSpeed );
 }
 
 
@@ -67,6 +73,7 @@ START_BTN.onclick = function(){
 async function endProcess() {
   // let playerName = await window.prompt("（7文字以下）ユーザー名を入力してください", "")
   // await localStorage.setItem(playerName.slice(0, 7), lineCount);
+  await localStorage.setItem("PLAY_NUM", ++playNumber);
   await localStorage.setItem("BEFORE_SCORE", lineCount * 100);
 }
 
@@ -89,6 +96,7 @@ function drawBlock(x,y,c)
 	let px = x * BLOCK_SIZE;
 	let py = y * BLOCK_SIZE;
 	context.fillStyle=TETRO_COLORS[c];
+	// context.fillStyle="black";
 	context.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
 	context.strokeStyle="black";
 	context.strokeRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
@@ -128,7 +136,7 @@ function drawAll(){
     START_BTN.textContent = 'RETRY';
     START_BTN.style.visibility = "visible";
     firstPlayFlg = false;
-    
+
     // ゲームオーバー表示
     GAME_OVER.style.visibility = "visible";
   }
@@ -208,6 +216,8 @@ function checkLine(){
     // ラインが全て 1 の場合削除処理
     if(flag){
       lineCount++;
+      // スコアが上がるたびに落下速度を 10ms 早める
+      nowGameSpeed = DEFAULT_GAME_SPEED - lineCount * 10;
 
       for(let newY = y; newY > 0; newY--){
         for(let newX = 0; newX < FIELD_COL; newX++){
@@ -236,11 +246,16 @@ function dropTetro(){
     // 座標をスタート位置へ
     tetro_x = START_X;
     tetro_y = START_Y;
-
+    
+    // パラメータ反映のためリスタート
+    clearInterval(intervalID);
+    intervalID = setInterval( dropTetro, nowGameSpeed );
     if(!checkMove(0, 0)){
       overFlg = true;
     }
   }
+
+
   drawAll(); //再描画
 }
 
@@ -276,3 +291,7 @@ document.onkeydown = function(e){
   // コントローラーを押下するたびに描画
   drawAll();
 }
+
+/** ギミックコード */
+
+nowGameSpeed += 100;
