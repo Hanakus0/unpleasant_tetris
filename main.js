@@ -74,14 +74,20 @@ function drawAll(){
   }
 };
 
-// 当たり判定
-function checkMove(moveX, moveY) {
+// // 当たり判定
+function checkMove(moveX, moveY, rotatedTetro=null) {
+  // 現状のテトロミノを代入
+  // 回転処理の場合は回転後のテトロミノを代入
+  let movedTetro = tetro;
+  if (rotatedTetro) movedTetro = rotatedTetro;
+
+  // 座標での移動可否の判定処理
   for(let y = 0; y < tetro.length; y++ ){
-    for(let x = 0; x < tetro[y].length; x++ ){
-      let nextX = tetro_x + moveX + x;
-      let nextY = tetro_y + moveY + y;
+    for(let x = 0; x < tetro[0].length; x++ ){
       // テトロミノ内で 1 かどうか
-      if(tetro[y][x]){
+      if(movedTetro[y][x]){
+        let nextX = tetro_x + moveX + x;
+        let nextY = tetro_y + moveY + y;
         // 衝突すると判定された場合 false
         // 最低値・最高値を超えていないか→ブロックが存在しないかで確認
         if( nextX < 0          || // X最低値オーバー
@@ -94,6 +100,24 @@ function checkMove(moveX, moveY) {
     }
   }
   return true;
+}
+
+
+// テトロミノの回転
+// 現テトロミノを別配列にコピー
+// テトロの回転
+function rotateTetro() {
+  let newTetro = [];
+  for(let y = 0; y < tetro.length; y++){
+    // 1次元配列
+    newTetro[y] = [];
+    for(let x = 0; x < tetro[0].length; x++ ){
+      // 2次元配列
+      // (配列の要素数-1 = ROWインデックス最大値) - x = 回転後のROW
+      newTetro[y][x] = tetro[tetro.length-1-x][y];
+    }
+  }
+  return newTetro;
 }
 
 // コントローラー
@@ -122,8 +146,8 @@ document.onkeydown = function(e){
       break;
     // スペース
     case " ":
-      console.log("␣");
-      if ( checkMove(-1, 0) )
+      let newTetro = rotateTetro();
+      if( checkMove(0 , 0, newTetro) ) tetro = newTetro;
       break;
   }
 
