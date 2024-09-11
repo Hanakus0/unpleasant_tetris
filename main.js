@@ -14,8 +14,20 @@ can.style.border = "4px solid #898989";
 const START_BTN = document.getElementById('start');
 const GAME_OVER = document.getElementById('gameover');
 const SCORE = document.getElementById('score');
+// 前回スコア
 const BEFORE_SCORE = document.getElementById('before_score');
 BEFORE_SCORE.textContent = localStorage.getItem('BEFORE_SCORE') || 0;
+// ハイスコア
+const USER_NAME = document.getElementById('user_name');
+const HIGH_SCORE = document.getElementById('high_score');
+let jsonData = fetch("./score.json").then(function(res){
+  return res.json();
+}).then((data) => {
+  console.log(data);
+  console.log(data[0].userName);
+  USER_NAME.textContent = data[0].userName;
+  HIGH_SCORE.textContent = data[0].highScore;
+});
 
 /** ゲームパラメータ*/
 // 初回プレイフラグ
@@ -64,8 +76,8 @@ START_BTN.onclick = function(){
 
 // ゲーム終了後の処理およびリロード
 async function endProcess() {
-  // let playerName = await window.prompt("（３文字）ユーザー名を入力してください", "")
-  // await localStorage.setItem(playerName.slice(0, 3), lineCount);
+  // let playerName = await window.prompt("（7文字以下）ユーザー名を入力してください", "")
+  // await localStorage.setItem(playerName.slice(0, 7), lineCount);
   await localStorage.setItem("BEFORE_SCORE", lineCount * 100);
 }
 
@@ -95,7 +107,7 @@ function drawBlock(x,y,c)
 
 /** フィールドの描画 */
 function drawAll(){
-  SCORE.textContent = "SCORE : " + lineCount * 100;
+  SCORE.textContent = "あなたのスコア : " + lineCount * 100;
 
   // 画面クリア
   context.clearRect(0, 0, SCREEN_W, SCREEN_H);

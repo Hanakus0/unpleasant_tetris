@@ -19,6 +19,19 @@
       color:#fff;
       font-size:20px;
       font-weight:bold;
+      margin: 0px 0px 15px 0px;
+    }
+    #high_score_table {
+      margin: 0px 0px 15px 0px;
+    }
+    #before_score_table {
+      margin: 30px 0px;
+    }
+    #user_name, #high_score{
+      user-select: none;
+      color:#ff0000;
+      font-size:20px;
+      font-weight:bold;
     }
     #gameover{
       user-select: none;
@@ -79,15 +92,28 @@
     tfoot td {
       font-weight: bold;
     }
-    #before_score_table {
-      margin-top: 20px;
-    }
 
 </style>
 </head>
 <body>    <!-- ゲーム画面 -->
   <!-- <button id="exit" onclick="over()">×</button>   -->
-  <div id="score">SCORE : 0</div>
+  <div>
+    <table id="high_score_table">
+      <thead>
+        <tr>
+          <th scope="col">プレーヤー名</th>
+          <th scope="col">ハイスコア</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th id="user_name" scope="row"></th>
+          <th id="high_score" scope="row"></th>
+        </tr>
+      </tbody>
+    </table>
+    <div id="score">あなたのスコア : 0</div>
+  </div>
   <div style="display: flex;">
     <canvas id="can"></canvas>
     <div id="introduce">
@@ -124,7 +150,7 @@
       <table id="before_score_table">
         <thead>
           <tr>
-            <th scope="col">前回プレイ時のスコア</th>
+            <th scope="col">あなたの前回プレイ時のスコア</th>
           </tr>
         </thead>
         <tbody>
