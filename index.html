@@ -1,12 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>不愉快なテトリス</title>
+  <link rel="icon" href="unpleasant_Tetris_favicon.png">
+  <style>
+    /* スタイルシート */
+    body{
+      background-color:#008;
+    }
+    #can{
+      user-select: none;
+      background-color:#000;
+    }
+    #score{
+      user-select: none;
+      color:#fff;
+      font-size:20px;
+      font-weight:bold;
+    }
+    #gameover{
+      user-select: none;
+      font-size: 40px;
+      border-radius: 5px;
+      color:#fff;
+      position:absolute;
+      top:200px;
+      left:45px;
+      visibility: hidden;
+    }
+    #start{
+      font-size:40px;
+      border-radius:5px;
+      background-color:#f77;
+      color:#fdd;
+      position:absolute;
+      top:400px;
+      left:95px;
+    }
+    #introduce{
+      user-select: none;
+      width: 30%;
+      padding-left: 30px;
+      color:#fff;
+    }
+    table {
+      border-collapse: collapse;
+      border: 2px solid rgb(140 140 140);
+      font-family: sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+    thead,
+    tfoot {
+      color:#000;
+      background-color: #fff;
+    }
+    caption {
+      caption-side: bottom;
+      padding: 10px;
+      font-weight: bold;
+    }
+    th,
+    td {
+      border: 1px solid rgb(160 160 160);
+      padding: 8px 10px;
+    }
+    td:last-of-type {
+      text-align: center;
+    }
+    tbody > tr{
+      background-color: #000;
+    }
+    tfoot th {
+      text-align: right;
+    }
+    tfoot td {
+      font-weight: bold;
+    }
+    #before_score_table {
+      margin-top: 20px;
+    }
+
+</style>
 </head>
-<body>
-  <h1>SAMPLE</h1>
-  <script src="./main.js"></script>
+<body>    <!-- ゲーム画面 -->
+  <!-- <button id="exit" onclick="over()">×</button>   -->
+  <div id="score">SCORE : 0</div>
+  <div style="display: flex;">
+    <canvas id="can"></canvas>
+    <div id="introduce">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">ボタン</th>
+            <th scope="col">説明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th id="left" scope="row">←</th>
+            <td>左移動</td>
+          </tr>
+          <tr>
+            <th id="right" scope="row">→</th>
+            <td>右移動</td>
+          </tr>
+          <tr>
+            <th id="down" scope="row">↓</th>
+            <td>落下速度アップ</td>
+          </tr>
+          <tr>
+            <th id="hard_drop" scope="row">↑</th>
+            <td>ハードドロップ</td>
+          </tr>
+          <tr>
+            <th id="space" scope="row">スペース</th>
+            <td>右回転</td>
+          </tr>
+        </tbody>
+      </table>
+      <table id="before_score_table">
+        <thead>
+          <tr>
+            <th scope="col">前回プレイ時のスコア</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th id="before_score" scope="row"></th>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="gameover">GAME OVER</div>
+  <button id="start">START</button>
+
+  <script type="module" src="./modules/parentModule.js"></script>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

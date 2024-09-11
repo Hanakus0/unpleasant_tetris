@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScriptで作るテトリス</title>
+    <style>
+        /* スタイルシート */
+        body{background-color:#008;}
+        #exit{
+            margin:0 10px 0 0;
+            background-color:#f77;
+            font-size:18px;
+            float:left;     }
+        #score{
+            color:#fff;
+            font-size:20px;
+            font-weight:bold;       }
+        #start{
+            font-size:40px;
+            border-radius:5px;
+            background-color:#f77;
+            color:#fdd;
+            position:absolute;	
+		    top:200px;
+		    left:58px;      }          
+    </style>
+</head>
+<body>
+    <!-- ゲーム画面 -->
+    <button id="exit" onclick="over()">×</button>  
+    <div id="score">SCORE:</div>
+    <canvas id="field" width="350px" height="500px"></canvas>
+    <button id="start" onclick="gameStart()">START</button>
+
+<script>
+    //サウンドファイルをインスタンス化
+    let bgm = new Audio("bgm.wav");
+    let inSound = new Audio("in.wav");
+    let delSound = new Audio("delete.wav");
+    let gameOver = new Audio("gameover.wav");
+
+    //エレメントの取得など
+    let field = document.getElementById("field");
+    let can = field.getContext("2d");
+    let sc = document.getElementById("score");
+    let exit = document.getElementById("exit");
+
+    // 変数など 
+    let arrayField = [];    //ゲームフィールドの状態を格納
+    let tetroList = [];     //操作するテトロミノとNext表示の３つを格納
+    let score;              //スコアを格納
+    let tetroDown = false;  //ダウンキー状態初期値
+    let gameSpeed = 500;    //ゲーム速度初期値
+    let timer1, timer2, timer3;
+
+    //テトロミノデータ [x1,y1, x2,y2, x3,y3, x4,y4, color]
+    let arrayTetro = [[-1,-1, 0,-1, 0, 0, 1, 0, "red"    ],      // Z型
+                      [ 0,-1, 1,-1,-1, 0, 0, 0, "green"  ],      // S型
+                      [ 1,-1,-1, 0, 0, 0, 1, 0, "orange" ],      // L型
+                      [-1,-1,-1, 0, 0, 0, 1, 0, "blue"   ],      // J型
+                      [-1,-1, 0,-1,-1, 0, 0, 0, "yellow" ],      // O型
+                      [ 0,-1,-1, 0, 0, 0, 1, 0, "magenta"],      // T型
+                      [-1, 0, 0, 0, 1, 0, 2, 0, "cyan"   ]];     // I型
+
+    //テトロミノクラス
+    class Tetro {
+        constructor(){
+            this.x = 4;
+            this.y = 0;
+            this.tetro = arrayTetro[Math.floor(Math.random()*7)].concat();   //７種類の中からランダムに選択
+        }
+    }
+
+    //ファーストスクリプト
+    window.onload = firstScript;    
+    function firstScript(){
+        can.fillStyle = "#000";
+        can.fillRect(0, 0, 250, 500);
+        arrayField = [];            //ゲームフィールド初期化(全部"black")
+        for(let y=0; y<20; y++){
+            let sub = [];
+            for(let x=0; x<10; x++){sub.push("black");}
+            arrayField.push(sub);
+        }
+        tetroList = [];             //テトロミノを４つインスタンス化
+        for(let i=0; i<4; i++){
+            tetroList.push(new Tetro());
+        }
+        document.getElementById("start").style.visibility = "visible";  //スタートボタン表示
+    }    
+    
+    //ゲームフィールドをクリアしてから描画する関数
+    function fieldDraw(){
+        can.fillStyle = "#000";                     //フィールドクリア            
+        can.fillRect(0, 0, 250, 500);
+        for(let y=0; y<20; y++){                    //フィールド描画
+            for(let x=0; x<10; x++){
+                can.fillStyle = arrayField[y][x];
+                can.fillRect(x*25, y*25, 25, 25);
+                can.strokeStyle = "black";
+                can.strokeRect(x*25, y*25, 25, 25);
+            }
+        }
+        for(let i=0; i<4; i++){                     //テトロミノ描画
+            can.fillStyle = tetroList[0].tetro[8];
+            can.fillRect((tetroList[0].tetro[i*2]+tetroList[0].x)*25, (tetroList[0].tetro[i*2+1]+tetroList[0].y)*25, 25, 25);
+            can.strokeStyle = "black";
+            can.strokeRect((tetroList[0].tetro[i*2]+tetroList[0].x)*25, (tetroList[0].tetro[i*2+1]+tetroList[0].y)*25, 25, 25);
+        }
+    }
+
+    //ネクストフィールドをクリアして再描画する関数
+    function nextDraw(){     
+        can.fillStyle = "#008";
+        can.fillRect(250, 0, 100, 500);
+        for(let i=1; i<4; i++){
+            can.fillStyle = tetroList[i].tetro[8];
+            for(let j=0; j<4; j++){
+                can.fillRect((tetroList[i].tetro[j*2]+1)*15+260, (tetroList[i].tetro[j*2+1]+i*5-2)*15, 15, 15);
+                can.strokeStyle = "white";
+                can.strokeRect((tetroList[i].tetro[j*2]+1)*15+260, (tetroList[i].tetro[j*2+1]+i*5-2)*15, 15, 15);
+            }
+        }
+    }
+
+    //ゲームスタート関数
+    function gameStart(){
+        firstScript();
+        score = 0;
+        tetroDown = false;
+        document.getElementById("start").style.visibility = "hidden";   //スタートボタン非表示
+        bgm.play();                                                     //ＢＧＭ再生
+        bgm.addEventListener("ended", function(){bgm.play();});
+        document.addEventListener("keydown", keyDown);                  //イベントリスナー
+        document.addEventListener("keyup", keyUp);
+        document.addEventListener("touchstart", touchStart, {passive:false});
+        document.addEventListener("touchend", touchEnd, {passive:false});
+        exit.addEventListener("touchstart", over);
+        nextDraw();                                                     //ネクストフィールド描画      
+        timer1 = setInterval(fieldDraw, 10);                            //セットインターバル
+        timer2 = setInterval(highSpeedDown, 80);
+        timer3 = setInterval(nomalDown, gameSpeed);
+    }
+
+    //移動(回転)可能判定をする関数
+    function judgeMove(afterTetro, positionX, positionY){           
+        for(let i=0; i<4; i++){
+            let afterX = afterTetro[i*2] + positionX;
+            let afterY = afterTetro[i*2+1] + positionY;
+            if(afterX<0 || afterY<0 || afterX>9 || afterY>19){return false;}
+            if(arrayField[afterY][afterX]!="black"){return false;}
+        }
+        return true;
+    }
+
+    //イベントハンドラー(キーボード)
+    function keyDown(e){                                //キーが押されたとき
+        let afterTetro = tetroList[0].tetro.concat();
+        let positionX = tetroList[0].x;
+        let positionY = tetroList[0].y;     
+
+        if(e.key=="ArrowRight" || e.key=="Right"){      //右キー(右移動)
+            positionX = tetroList[0].x+1;
+        }
+        if(e.key=="ArrowLeft" || e.key=="Left"){        //左キー(左移動)
+            positionX = tetroList[0].x-1;
+        }
+        if(e.key=="ArrowUp" || e.key=="Up"){            //上キー(時計回転)
+            afterTetro = [];
+            for(let i=0; i<4; i++){
+                afterTetro.push(tetroList[0].tetro[i*2+1]*-1);
+                afterTetro.push(tetroList[0].tetro[i*2]);
+            }
+            afterTetro.push(tetroList[0].tetro[8]);
+        }
+        if(e.key==" "){                                 //スペースキー(反時計回転)
+            afterTetro = [];
+            for(let i=0; i<4; i++){
+                afterTetro.push(tetroList[0].tetro[i*2+1]);
+                afterTetro.push(tetroList[0].tetro[i*2]*-1);
+            }
+            afterTetro.push(tetroList[0].tetro[8]);
+        }
+        if(e.key=="ArrowDown" || e.key=="Down"){        //下キー(押下中落下加速True)
+            tetroDown = true;        
+        }
+        let isMove = judgeMove(afterTetro, positionX, positionY);
+        if(isMove){
+            tetroList[0].tetro = afterTetro;
+            tetroList[0].x = positionX;
+            tetroList[0].y = positionY;
+        }
+    }
+    function keyUp(e){                                  //キーが離されたとき
+        if(e.key=="ArrowDown" || e.key=="Down"){        //下キー(リリースで落下加速False)
+            tetroDown = false;
+        }
+    }
+
+    //イベントハンドラー(スマホタップ)
+    let startX = 0;
+    let startY = 0;
+    function touchStart(e){
+        e.preventDefault();
+        startX = e.touches[0].pageX;
+        startY = e.touches[0].pageY;
+
+        let afterTetro = tetroList[0].tetro.concat();
+        let positionX = tetroList[0].x;
+        let positionY = tetroList[0].y;     
+
+        if(startY<500 && startY>200 && startX>85 && startX<165){
+            afterTetro = [];
+            for(let i=0; i<4; i++){
+                afterTetro.push(tetroList[0].tetro[i*2+1]*-1);
+                afterTetro.push(tetroList[0].tetro[i*2]);
+            }
+            afterTetro.push(tetroList[0].tetro[8]);
+        }
+        if(startY>200 && startX<80){
+            positionX = tetroList[0].x-1;
+        }
+        if(startY>200 && startX>170){
+            positionX = tetroList[0].x+1;
+        }
+        if(startY>500 && startX>85 && startX<165){
+            tetroDown = true;
+        }     
+        let isMove = judgeMove(afterTetro, positionX, positionY);
+        if(isMove){
+            tetroList[0].tetro = afterTetro;
+            tetroList[0].x = positionX;
+            tetroList[0].y = positionY;   
+        }
+    }
+    function touchEnd(e){
+        e.preventDefault();
+        tetroDown = false;     
+    }
+
+    //高速落下を制御する関数
+    function highSpeedDown(){
+        if(tetroDown){
+            let afterTetro = tetroList[0].tetro.concat();
+            let positionX = tetroList[0].x;
+            let positionY = tetroList[0].y+1;
+            let isMove = judgeMove(afterTetro, positionX, positionY);
+            if(isMove){
+                tetroList[0].tetro = afterTetro;
+                tetroList[0].x = positionX;
+                tetroList[0].y = positionY;   
+                score += 1;
+                sc.textContent = "SCORE: " + score;
+            }
+            else{fixedTetro();}
+        }
+    }
+
+    //自然落下を制御する関数
+    function nomalDown(){
+        let afterTetro = tetroList[0].tetro.concat()
+        let positionX = tetroList[0].x;
+        let positionY = tetroList[0].y+1;
+        let isMove = judgeMove(afterTetro, positionX, positionY);
+        if(isMove){
+            tetroList[0].tetro = afterTetro;
+            tetroList[0].x = positionX;
+            tetroList[0].y = positionY;
+        }
+        else{fixedTetro();}
+    }
+
+    //フィールドにテトロミノを固定する関数
+    function fixedTetro(){
+        let beforeX, beforeY, color;
+        for(let i=0; i<4; i++){
+            beforeX = tetroList[0].tetro[i*2] + tetroList[0].x;
+            beforeY = tetroList[0].tetro[i*2+1] + tetroList[0].y;
+            color = tetroList[0].tetro[8];
+            arrayField[beforeY][beforeX] = color;
+        }
+        checkLine();
+        changeTetro();
+    }
+
+    //ラインがそろっているか確認する関数
+    function checkLine(){
+        let point = [0, 40, 100, 300, 1200];
+        let lineCount = 0;
+        for(let i=0; i<20; i++){
+            if(arrayField[i].indexOf("black")==-1){lineCount++;}
+        }
+        score += point[lineCount];
+        sc.textContent = "SCORE: " + score;
+
+        for(let i=19; i>=0; i--){
+            if(arrayField[i].indexOf("black")==-1){
+                arrayField.splice(i, 1);
+                delSound.play();
+            }
+        }
+        for(let i=0; i<lineCount; i++){
+            let sub = [];
+            for(let j=0; j<10; j++){
+                sub.push("black");
+            }
+            arrayField.unshift(sub);
+        }
+    }
+
+    //固定したテトロミノをリストから削除＆新テトロミノをインスタンス化する関数
+    function changeTetro(){
+        tetroList.shift();
+        tetroList.push(new Tetro());
+        inSound.play();
+        let isMove = judgeMove(tetroList[0].tetro, 4, 1);
+        if(isMove==false){over();}
+        nextDraw();
+    }
+
+    //ゲームオーバー処理の関数
+    function over(){
+        fieldDraw();
+        bgm.pause();
+        bgm.currentTime = 0;
+        gameOver.play();
+        clearInterval(timer1);
+        clearInterval(timer2);
+        clearInterval(timer3);
+        document.getElementById("start").style.visibility = "visible";
+        document.removeEventListener("keydown", keyDown); 
+        document.removeEventListener("keyup", keyUp);
+        document.removeEventListener("touchstart", touchStart, {passive:false});
+        document.removeEventListener("touchend", touchEnd, {passive:false});
+    }
+
+</script>
+</body>
+</html>
