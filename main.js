@@ -1,7 +1,10 @@
 'use strict'
 
 import { drawBlock } from './modules/parentModule.js';
-import { BLOCK_SIZE, FIELD_COL, FIELD_ROW, SCREEN_W, SCREEN_H } from './modules/parentModule.js';
+import { BLOCK_SIZE, DEFAULT_GAME_SPEED, FIELD_COL, FIELD_ROW, SCREEN_W, SCREEN_H } from './modules/parentModule.js';
+
+// テトロミノの落下速度
+let nowGameSpeed = DEFAULT_GAME_SPEED;
 
 /** パラメータ*/
 // `canvas`要素の取得および2d指定
@@ -46,6 +49,9 @@ function init() {
 /** 描画処理 */
 init();
 drawAll();
+
+// nowGameSpeed 毎にテトロミノを落下させる
+setInterval( dropTetro, nowGameSpeed );
 
 function drawAll(){
   // 画面クリア
@@ -118,6 +124,33 @@ function rotateTetro() {
     }
   }
   return newTetro;
+}
+
+function fixTetro() {
+  // 1次元配列
+  for(let y = 0; y < tetro.length; y++){
+    // 2次元配列
+    for(let x = 0; x < tetro[0].length; x++ ){
+      if(tetro[y][x]){
+        // 着地時点の座標からテトロミノの描画をするイメージ
+        field[tetro_y + y][tetro_x + x] = 1
+      }
+    }
+  }
+}
+
+// テトロミノの落下＆落下毎に再描画
+function dropTetro(){
+  // 移動可能ならば下へ移動
+  // 移動できなければ位置を固定
+  if ( checkMove(0, 1) ){
+    tetro_y++;
+  } else {
+    fixTetro();
+    tetro_x = 0;
+    tetro_y = 0;
+  }
+  drawAll(); //再描画
 }
 
 // コントローラー
