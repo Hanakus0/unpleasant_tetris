@@ -172,10 +172,10 @@ document.onkeydown = function(e){
       console.log("Left");
       if ( checkMove(-1, 0) ) tetro_x--;
       break;
-    // ↑
+    // ハードドロップ(↑)
     case "ArrowUp":
       console.log("Up");
-      if ( checkMove(0, -1) ) tetro_y--;
+      while ( checkMove(0, +1) ) tetro_y++;
       break;
     // スペース
     case " ":
