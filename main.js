@@ -17,17 +17,6 @@ const SCORE = document.getElementById('score');
 // 前回スコア
 const BEFORE_SCORE = document.getElementById('before_score');
 BEFORE_SCORE.textContent = localStorage.getItem('BEFORE_SCORE') || 0;
-// ハイスコア
-const USER_NAME = document.getElementById('user_name');
-const HIGH_SCORE = document.getElementById('high_score');
-let jsonData = fetch("./score.json").then(function(res){
-  return res.json();
-}).then((data) => {
-  console.log(data);
-  console.log(data[0].userName);
-  USER_NAME.textContent = data[0].userName;
-  HIGH_SCORE.textContent = data[0].highScore;
-});
 
 /** ゲームパラメータ*/
 // 初回プレイフラグ
@@ -107,7 +96,7 @@ function drawBlock(x,y,c)
 
 /** フィールドの描画 */
 function drawAll(){
-  SCORE.textContent = "あなたのスコア : " + lineCount * 100;
+  SCORE.textContent = lineCount * 100;
 
   // 画面クリア
   context.clearRect(0, 0, SCREEN_W, SCREEN_H);
