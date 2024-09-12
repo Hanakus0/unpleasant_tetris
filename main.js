@@ -1,7 +1,9 @@
 'use strict'
 
 import { BLOCK_SIZE, DEFAULT_GAME_SPEED, FIELD_COL, FIELD_ROW, SCREEN_W, SCREEN_H } from './modules/parentModule.js';
-import { BASIC_TETRO_SIZE, TETRO_TYPES, TETRO_COLORS  } from './modules/parentModule.js';
+import { BASIC_TETRO_SIZE, TETRO_TYPES, TETRO_COLORS, addStrangeTetro, rmStrangeTetro } from './modules/parentModule.js';
+import { getRandomAlphabets } from './modules/parentModule.js';
+import createListElement from './modules/parentModule.js';
 
 // `canvas`要素の取得および2d指定
 let can = document.getElementById('can');
@@ -21,12 +23,43 @@ PLAY_NUM.textContent = playNumber;
 // 前回スコア
 const BEFORE_SCORE = document.getElementById('before_score');
 BEFORE_SCORE.textContent = localStorage.getItem('BEFORE_SCORE') || 0;
+// ハイスコア
+const HIGH_SCORE = document.getElementById('high_score');
+const HIGH_SCORE_VAL = localStorage.getItem('HIGH_SCORE');
+HIGH_SCORE.textContent = HIGH_SCORE_VAL || 0;
+
+/** コントローラー関連 */
+// 初期操作キー説明
+const LEFT = document.getElementById('left');
+const RIGHT = document.getElementById('right');
+const DOWN = document.getElementById('down');
+const HARD_DROP = document.getElementById('hard_drop');
+const ROTATE = document.getElementById('rotate');
+// 初期操作キー
+let Dropkey = "ArrowUp";
+let Downkey = "ArrowDown";
+let Leftkey = "ArrowLeft";
+let Rightkey = "ArrowRight";
+let rotateKey = " ";
 
 /** ゲームパラメータ*/
 // 初回プレイフラグ
+const playModeList = document.getElementById('mode_list');
+// インターバルID
 let intervalID;
 // 初回プレイフラグ
 let firstPlayFlg = true;
+
+/** ギミックフラグ */
+// ストレンジテトロフラグ
+let addStrangeTetroFlg = false;
+// ダークモードフラグ
+let darkModeFlg = false;
+// コントローラー変化フラグ
+let changeControllerFlg = false;
+// スピード変調フラグ
+let changeSpeedFlg = false;
+
 // ゲームオーバーフラグ
 let overFlg = false;
 // テトロミノの落下速度
@@ -42,13 +75,12 @@ const START_Y = 0;
 let tetro;
 // テトロミノの種類(TETRO_TYPES:0-6)
 let tetroType;
-
 // 開始位置のテトロミノの座標
 let tetro_x = START_X;
 let tetro_y = START_Y;
 
 let field = [];
-tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1; // 0-6(+1)をしない
+tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 6)) + 1; // 0-6(+1)をしない
 tetro = TETRO_TYPES[tetroType];
 
 
@@ -60,6 +92,7 @@ tetro = TETRO_TYPES[tetroType];
 // スタートボタン押下後
 START_BTN.onclick = function(){
   if(!firstPlayFlg) endProcess().then(() => window.location.reload());
+  document.getElementById('score-container').remove();
   START_BTN.style.visibility = "hidden";
   GAME_OVER.style.visibility = "hidden";
   init();
@@ -71,10 +104,12 @@ START_BTN.onclick = function(){
 
 // ゲーム終了後の処理およびリロード
 async function endProcess() {
-  // let playerName = await window.prompt("（7文字以下）ユーザー名を入力してください", "")
-  // await localStorage.setItem(playerName.slice(0, 7), lineCount);
+  // 今回のプレイがハイスコアよりもスコアが高い場合は保存
+  if (HIGH_SCORE_VAL < (lineCount*100)) {
+    await localStorage.setItem("HIGH_SCORE", lineCount*100);
+  }
   await localStorage.setItem("PLAY_NUM", ++playNumber);
-  await localStorage.setItem("BEFORE_SCORE", lineCount * 100);
+  await localStorage.setItem("BEFORE_SCORE", lineCount*100);
 }
 
 // フィールド本体
@@ -95,10 +130,17 @@ function drawBlock(x,y,c)
 {
 	let px = x * BLOCK_SIZE;
 	let py = y * BLOCK_SIZE;
-	context.fillStyle=TETRO_COLORS[c];
-	// context.fillStyle="black";
+  // テトロミノの色
+	context.fillStyle = TETRO_COLORS[c];
+  // テトロミノの枠色
+	context.strokeStyle = "black";
+  /** ギミックフラグ管理 */
+    // ストレンジテトロフラグの確認
+  if(darkModeFlg) {
+    context.fillStyle="black";
+    context.strokeStyle="#001433";
+  }
 	context.fillRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
-	context.strokeStyle="black";
 	context.strokeRect(px,py,BLOCK_SIZE,BLOCK_SIZE);
 }
 
@@ -160,7 +202,7 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
         // 最低値・最高値を超えていないか→ブロックが存在しないかで確認
         if( nextX < 0          || // X最低値オーバー
             nextX >= FIELD_COL || // X最高値オーバー
-            nextY < -1          || // Y最低値オーバー
+            nextY < -1         || // Y最低値オーバー
             nextY >= FIELD_ROW || // Y最高値オーバー
             field[nextY][nextX]   // 移動後の座標に 1 が存在するか
         ) return false;
@@ -169,7 +211,6 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
   }
   return true;
 }
-
 
 // テトロミノの回転
 // 現テトロミノを別配列にコピー
@@ -215,10 +256,11 @@ function checkLine(){
     }
     // ラインが全て 1 の場合削除処理
     if(flag){
+      rmStrangeTetro();
       lineCount++;
       // スコアが上がるたびに落下速度を 10ms 早める
       nowGameSpeed = DEFAULT_GAME_SPEED - lineCount * 10;
-
+      // 削除分ラインの移動
       for(let newY = y; newY > 0; newY--){
         for(let newX = 0; newX < FIELD_COL; newX++){
           field[newY][newX] = field[newY-1][newX];
@@ -237,11 +279,26 @@ function dropTetro(){
   if ( checkMove(0, 1) ){
     tetro_y++;
   } else {
+
+    // ギミックトリガー地点
+    switchGimmick();
+    
     // 次のテトロミノへの準備
     fixTetro();
     checkLine();
     // 次のテトロミノを設定
-    tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1;
+    tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 6)) + 1;
+    /** ギミックフラグ管理 */
+    // ストレンジテトロフラグの確認
+    if(addStrangeTetroFlg) tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1;
+    /** ギミックフラグ管理 */
+    // コントローラー変化フラグの確認
+    if(changeControllerFlg) changecontrollerKeys();
+    /** ギミックフラグ管理 */
+    // スピードギミックフラグの確認
+    if(changeSpeedFlg) changeGameSpeed();
+    
+    // テトロの決定
     tetro = TETRO_TYPES[tetroType];
     // 座標をスタート位置へ
     tetro_x = START_X;
@@ -254,8 +311,6 @@ function dropTetro(){
       overFlg = true;
     }
   }
-
-
   drawAll(); //再描画
 }
 
@@ -265,33 +320,118 @@ document.onkeydown = function(e){
   if(overFlg) return;
   switch( e.key ){
     // →
-    case "ArrowRight":
+    case Rightkey:
       if ( checkMove(1, 0) ) tetro_x++;
       break;
     // ↓
-    case "ArrowDown":
+    case Downkey:
       if ( checkMove(0, 1) ) tetro_y++;
       break;
     // ←
-    case "ArrowLeft":
+    case Leftkey:
       if ( checkMove(-1, 0) ) tetro_x--;
       break;
     // ハードドロップ(↑)
-    case "ArrowUp":
+    case Dropkey:
       while ( checkMove(0, +1) ) tetro_y++;
       fixTetro();
       break;
     // スペース
-    case " ":
+    case rotateKey:
       let newTetro = rotateTetro();
       if( checkMove(0 , 0, newTetro) ) tetro = newTetro;
       break;
   }
-
   // コントローラーを押下するたびに描画
   drawAll();
 }
 
 /** ギミックコード */
+// ギミックのトリガー
+function switchGimmick() {
+  // let modeNum = (Math.floor(Math.random() * 20));
+  let modeNum = (Math.floor(Math.random() * 10));
+  // switch分岐
+  switch(modeNum) {
+    case 0:
+    case 1:
+    case 2:
+      (addStrangeTetroFlg) ? addStrangeTetroFlg = false :  addStrangeTetroFlg = true ;
+      createListElement('add_strange', addStrangeTetroFlg);
+      break;
+    case 3:
+    case 4:
+    case 5:
+      (darkModeFlg) ? darkModeFlg = false :  darkModeFlg = true ;
+      changeDarkMode();
+      break;
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+      (changeControllerFlg) ? changeControllerFlg = false :  changeControllerFlg = true ;
+      changecontrollerKeys();
+      break;
+    case 12:
+    case 13:
+    case 14:
+      (changeSpeedFlg) ? changeSpeedFlg = false :  changeSpeedFlg = true ;
+      changeGameSpeed();
+      break;
+  }
+}
 
-nowGameSpeed += 100;
+// ギミック関数一覧
+// addStrangeTetro()
+// changecontrollerKeys()
+// changeDarkMode()
+// changeGameSpeed()
+
+// 操作キーを変更
+function changecontrollerKeys(){
+  // ランダムでアルファベットを5つ取得
+  let [newDropkey, newDownkey, newLeftkey, newRightkey, newrotateKey] = getRandomAlphabets();
+  // 操作キーの変更
+  Leftkey = newLeftkey;
+  Rightkey = newRightkey;
+  Downkey = newDownkey;
+  Dropkey = newDropkey;
+  rotateKey = newrotateKey;
+  // 操作キーの説明表示を変更
+  LEFT.textContent = newLeftkey;
+  RIGHT.textContent = newRightkey;
+  DOWN.textContent = newDownkey;
+  HARD_DROP.textContent = newDropkey;
+  ROTATE.textContent = newrotateKey;
+  // モード表記追加
+  createListElement('chg_Controller', changeControllerFlg);
+}
+
+// // テトロミノの形を追加
+// function addStrangeTetroProc(){
+//   // モード表記追加
+//   createListElement('add_strange', addStrangeTetroFlg);
+// }
+
+// テトロミノの色、背景色を変更
+function changeDarkMode(){
+  // モード表記追加
+  createListElement('dark_mode', darkModeFlg);
+  // ダークモード用のフラグを立てる
+  // if(darkModeFlg){
+  //   // 画面背景色
+  //   document.body.style.backgroundColor = "#000";
+  // } else {
+  //   document.body.style.backgroundColor = "#008";
+  // }
+}
+
+// ランダムな落下スピードに変更
+function changeGameSpeed(){
+  // モード表記追加
+  createListElement('chg_speed', changeSpeedFlg);
+  // ランダムにスピードを決定(スピードは 400-800 で調整)
+  nowGameSpeed = Math.floor(Math.random() * 5) * 200;
+}

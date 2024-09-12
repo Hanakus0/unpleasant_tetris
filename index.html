@@ -14,18 +14,28 @@
       user-select: none;
       background-color:#000;
     }
+    #now_score_table {
+      user-select: none;
+      margin: 0px 0px 15px 0px;
+    }
     #score{
+      width: 130px;
       user-select: none;
       color:#fff;
       font-size:20px;
       font-weight:bold;
       margin: 0px 0px 15px 0px;
     }
-    #now_score_table {
+    #high_score{
+      width: 130px;
       user-select: none;
+      color:#ff0000;
+      font-size:20px;
+      font-weight:bold;
       margin: 0px 0px 15px 0px;
     }
     #before_score_table {
+      text-align: center;
       user-select: none;
       margin: 30px 0px;
     }
@@ -94,28 +104,105 @@
     tfoot td {
       font-weight: bold;
     }
-
+    #display_mode {
+      visibility: hidden;
+      user-select: none;
+      width: 400px;
+      margin: 0px 0px 30px 0px;
+      /* 子要素 */
+      thead {
+        color:#000000;
+        background-color: #ff0000;
+      }
+      #playmode {
+        background-color: #000;
+      }
+      #chg_Controller, 
+      #add_strange, 
+      #dark_mode, 
+      #chg_speed
+      {
+        visibility: hidden;
+        text-align: center;
+        color:#000000;
+        background-color: #fffb00;
+      }
+    }
+    /* リッチな表記  */
+    #score-container {
+      margin: 15px 0px;
+      text-align: center;
+      background-color: #e9ff6e;
+      width: 100%;
+      
+      h1 {
+        font-size: 25px;
+        font-weight: bold;
+        background: linear-gradient(90deg, #ff7f50, #ff4500);
+        -webkit-background-clip: text;
+        color: transparent;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        margin: 0;
+      }
+      
+      .score {
+        font-size: 40px;
+        color: #2e8b57;
+        font-weight: bold;
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+      }
+    }
 </style>
 </head>
-<body>    <!-- ゲーム画面 -->
-  <!-- <button id="exit" onclick="over()">×</button>   -->
+<!-- ゲーム画面 -->
+<body>    
   <div>
     <table id="now_score_table">
       <thead>
         <tr>
           <th scope="col">あなたのスコア</th>
+          <th scope="col">あなたのハイスコア</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th id="score" scope="row">0</th>
+          <td id="high_score"></td>
         </tr>
       </tbody>
     </table>
+    <div id="score-container">
+      <h1>目指せスコア</h1>
+      <div class="score">1000 点</div>
+    </div>
   </div>
   <div style="display: flex;">
     <canvas id="can"></canvas>
+     <!-- プレイモード -->
     <div id="introduce">
+      <!-- HIDEEN -->
+      <table id="display_mode">
+        <thead>
+          <tr>
+            <th scope="col">プレイモード</th>
+          </tr>
+        </thead>
+        <tbody id="playmode">
+          <tr>
+            <td id="chg_Controller">操作性がゴミになる操作キーランダム変更 モード</td>
+          </tr>
+          <tr>
+            <td id="add_strange">クソみたいな形のテトロミノが落ちてくる モード</td>
+          </tr>
+          <tr>
+            <td id="dark_mode">(偽善) プレーヤーの目を保護するダークモード</td>
+          </tr>
+          <tr>
+            <td id="chg_speed">【メリット皆無】 落下速度変調 モード</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- ボタン説明 -->
       <table>
         <thead>
           <tr>
@@ -141,15 +228,16 @@
             <td>ハードドロップ</td>
           </tr>
           <tr>
-            <th id="space" scope="row">スペース</th>
-            <td>右回転</td>
+            <th id="rotate" scope="row">スペース</th>
+            <td>テトロミノを右回転</td>
           </tr>
         </tbody>
       </table>
+      <!-- 前回プレイ -->
       <table id="before_score_table">
         <thead>
           <tr>
-            <th scope="col">#</th>
+            <th scope="col">プレイ回数</th>
             <th scope="col">あなたの前回プレイ時のスコア</th>
           </tr>
         </thead>
