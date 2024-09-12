@@ -88,30 +88,15 @@ const TETRO_COLORS = [
   "#0c6569", // 緑気味:5
   "#676902", // 黄色気味:6
   "#460c69", // 紫気味:7
-		// LARGE
-		"#f5f5dc", // ベージュ:8
-		"#00ffff", // シアン:9
-		"#8b4513", // サドルブラウン:10
-		"#808000", // オリーブ:11
-		"#ff00ff", // マゼンタ:12
+	// LARGE
+	"#f5f5dc", // ベージュ:8
+	"#00ffff", // シアン:9
+	"#8b4513", // サドルブラウン:10
+	"#808000", // オリーブ:11
+	"#ff00ff", // マゼンタ:12
 ];
 
-// 変なタイプのテトロミノの形、色を追加
-function addStrangeTetro(){
-	TETRO_TYPES.push(...STRANGE_TETRO_TYPES);
-	TETRO_COLORS.push(...STRANGE_TETRO_COLORS);
-}
-
-// 変なタイプのテトロミノの形、色を削除
-function rmStrangeTetro(){
-	for(let i=0; i < 5; i++){
-		TETRO_TYPES.pop();
-	}
-}
-
 export { 
-	addStrangeTetro,
-	rmStrangeTetro,
 	BASIC_TETRO_SIZE, 
 	TETRO_TYPES, 
 	TETRO_COLORS 

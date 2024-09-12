@@ -1,7 +1,7 @@
 'use strict'
 
 import { BLOCK_SIZE, DEFAULT_GAME_SPEED, FIELD_COL, FIELD_ROW, SCREEN_W, SCREEN_H } from './modules/parentModule.js';
-import { BASIC_TETRO_SIZE, TETRO_TYPES, TETRO_COLORS, addStrangeTetro, rmStrangeTetro } from './modules/parentModule.js';
+import { BASIC_TETRO_SIZE, TETRO_TYPES, TETRO_COLORS } from './modules/parentModule.js';
 import { getRandomAlphabets } from './modules/parentModule.js';
 import createListElement from './modules/parentModule.js';
 
@@ -80,7 +80,7 @@ let tetro_x = START_X;
 let tetro_y = START_Y;
 
 let field = [];
-tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 6)) + 1; // 0-6(+1)をしない
+tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1 - 5)) + 1; // 0-6(+1)をしない
 tetro = TETRO_TYPES[tetroType];
 
 
@@ -202,7 +202,7 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
         // 最低値・最高値を超えていないか→ブロックが存在しないかで確認
         if( nextX < 0          || // X最低値オーバー
             nextX >= FIELD_COL || // X最高値オーバー
-            nextY < -1         || // Y最低値オーバー
+            nextY < 0          || // Y最低値オーバー
             nextY >= FIELD_ROW || // Y最高値オーバー
             field[nextY][nextX]   // 移動後の座標に 1 が存在するか
         ) return false;
@@ -216,13 +216,13 @@ function checkMove(moveX, moveY, rotatedTetro=null) {
 // 現テトロミノを別配列にコピー
 function rotateTetro() {
   let newTetro = [];
-  for(let y = 0; y < tetro.length; y++){
+  for(let y = 0; y < tetroSize; y++){
     // 1次元配列
     newTetro[y] = [];
-    for(let x = 0; x < tetro[0].length; x++ ){
+    for(let x = 0; x < tetroSize; x++ ){
       // 2次元配列
       // (配列の要素数-1 = ROWインデックス最大値) - x = 回転後のROW
-      newTetro[y][x] = tetro[tetro.length-1-x][y];
+      newTetro[y][x] = tetro[tetroSize-1-x][y];
     }
   }
   return newTetro;
@@ -256,7 +256,6 @@ function checkLine(){
     }
     // ラインが全て 1 の場合削除処理
     if(flag){
-      rmStrangeTetro();
       lineCount++;
       // スコアが上がるたびに落下速度を 10ms 早める
       nowGameSpeed = DEFAULT_GAME_SPEED - lineCount * 10;
@@ -276,6 +275,14 @@ function dropTetro(){
   if(overFlg) return;
   // 移動可能ならば下へ移動
   // 移動できなければ位置を固定
+
+  console.log(TETRO_TYPES.length);
+  console.log(tetro);
+  console.log(tetroType);
+  console.log(Math.floor(Math.random() * (TETRO_TYPES.length - 1 - 5)) + 1);
+  console.log(Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1);
+  console.log(checkMove(0, 1));
+
   if ( checkMove(0, 1) ){
     tetro_y++;
   } else {
@@ -287,7 +294,7 @@ function dropTetro(){
     fixTetro();
     checkLine();
     // 次のテトロミノを設定
-    tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 6)) + 1;
+    tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1 - 5)) + 1;
     /** ギミックフラグ管理 */
     // ストレンジテトロフラグの確認
     if(addStrangeTetroFlg) tetroType = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1;
@@ -352,35 +359,35 @@ function switchGimmick() {
   // let modeNum = (Math.floor(Math.random() * 20));
   let modeNum = (Math.floor(Math.random() * 10));
   // switch分岐
-  switch(modeNum) {
-    case 0:
-    case 1:
-    case 2:
+  // switch(modeNum) {
+  //   case 0:
+  //   case 1:
+  //   case 2:
       (addStrangeTetroFlg) ? addStrangeTetroFlg = false :  addStrangeTetroFlg = true ;
       createListElement('add_strange', addStrangeTetroFlg);
-      break;
-    case 3:
-    case 4:
-    case 5:
-      (darkModeFlg) ? darkModeFlg = false :  darkModeFlg = true ;
-      changeDarkMode();
-      break;
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-      (changeControllerFlg) ? changeControllerFlg = false :  changeControllerFlg = true ;
-      changecontrollerKeys();
-      break;
-    case 12:
-    case 13:
-    case 14:
-      (changeSpeedFlg) ? changeSpeedFlg = false :  changeSpeedFlg = true ;
-      changeGameSpeed();
-      break;
-  }
+      // break;
+    // case 3:
+    // case 4:
+    // case 5:
+    //   (darkModeFlg) ? darkModeFlg = false :  darkModeFlg = true ;
+    //   changeDarkMode();
+    //   break;
+    // case 6:
+    // case 7:
+    // case 8:
+    // case 9:
+    // case 10:
+    // case 11:
+    //   (changeControllerFlg) ? changeControllerFlg = false :  changeControllerFlg = true ;
+    //   changecontrollerKeys();
+    //   break;
+    // case 12:
+    // case 13:
+    // case 14:
+    //   (changeSpeedFlg) ? changeSpeedFlg = false :  changeSpeedFlg = true ;
+    //   changeGameSpeed();
+    //   break;
+  // }
 }
 
 // ギミック関数一覧
