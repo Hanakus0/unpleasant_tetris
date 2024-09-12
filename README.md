@@ -1,3 +1,6 @@
+2024/09/13 - ゲームが進行出来なくなる致命的なバグを発見 → 修正
+2024/09/12 - リリース
+---
 # 概要
 - サイトURL : https://hanakus0.github.io/unpleasant_tetris/
 - リポジトリURL : https://github.com/Hanakus0/unpleasant_tetris
