@@ -276,13 +276,6 @@ function dropTetro(){
   // 移動可能ならば下へ移動
   // 移動できなければ位置を固定
 
-  console.log(TETRO_TYPES.length);
-  console.log(tetro);
-  console.log(tetroType);
-  console.log(Math.floor(Math.random() * (TETRO_TYPES.length - 1 - 5)) + 1);
-  console.log(Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1);
-  console.log(checkMove(0, 1));
-
   if ( checkMove(0, 1) ){
     tetro_y++;
   } else {
@@ -356,48 +349,44 @@ document.onkeydown = function(e){
 /** ギミックコード */
 // ギミックのトリガー
 function switchGimmick() {
-  // let modeNum = (Math.floor(Math.random() * 20));
-  let modeNum = (Math.floor(Math.random() * 10));
+  let modeNum = (Math.floor(Math.random() * 20));
   // switch分岐
-  // switch(modeNum) {
-  //   case 0:
-  //   case 1:
-  //   case 2:
+  switch(modeNum) {
+    case 0:
+    case 1:
+    case 2:
       (addStrangeTetroFlg) ? addStrangeTetroFlg = false :  addStrangeTetroFlg = true ;
+      // モード表記追加
       createListElement('add_strange', addStrangeTetroFlg);
-      // break;
-    // case 3:
-    // case 4:
-    // case 5:
-    //   (darkModeFlg) ? darkModeFlg = false :  darkModeFlg = true ;
-    //   changeDarkMode();
-    //   break;
-    // case 6:
-    // case 7:
-    // case 8:
-    // case 9:
-    // case 10:
-    // case 11:
-    //   (changeControllerFlg) ? changeControllerFlg = false :  changeControllerFlg = true ;
-    //   changecontrollerKeys();
-    //   break;
-    // case 12:
-    // case 13:
-    // case 14:
-    //   (changeSpeedFlg) ? changeSpeedFlg = false :  changeSpeedFlg = true ;
-    //   changeGameSpeed();
-    //   break;
-  // }
+      break;
+    case 3:
+    case 4:
+    case 5:
+      (darkModeFlg) ? darkModeFlg = false :  darkModeFlg = true ;
+      // モード表記追加
+      createListElement('dark_mode', darkModeFlg);
+      break;
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+      (changeControllerFlg) ? changeControllerFlg = false :  changeControllerFlg = true ;
+      break;
+    case 12:
+    case 13:
+    case 14:
+      (changeSpeedFlg) ? changeSpeedFlg = false :  changeSpeedFlg = true ;
+      break;
+  }
 }
 
 // ギミック関数一覧
-// addStrangeTetro()
-// changecontrollerKeys()
-// changeDarkMode()
-// changeGameSpeed()
-
 // 操作キーを変更
 function changecontrollerKeys(){
+  // モード表記追加
+  createListElement('chg_Controller', changeControllerFlg);
   // ランダムでアルファベットを5つ取得
   let [newDropkey, newDownkey, newLeftkey, newRightkey, newrotateKey] = getRandomAlphabets();
   // 操作キーの変更
@@ -412,27 +401,6 @@ function changecontrollerKeys(){
   DOWN.textContent = newDownkey;
   HARD_DROP.textContent = newDropkey;
   ROTATE.textContent = newrotateKey;
-  // モード表記追加
-  createListElement('chg_Controller', changeControllerFlg);
-}
-
-// // テトロミノの形を追加
-// function addStrangeTetroProc(){
-//   // モード表記追加
-//   createListElement('add_strange', addStrangeTetroFlg);
-// }
-
-// テトロミノの色、背景色を変更
-function changeDarkMode(){
-  // モード表記追加
-  createListElement('dark_mode', darkModeFlg);
-  // ダークモード用のフラグを立てる
-  // if(darkModeFlg){
-  //   // 画面背景色
-  //   document.body.style.backgroundColor = "#000";
-  // } else {
-  //   document.body.style.backgroundColor = "#008";
-  // }
 }
 
 // ランダムな落下スピードに変更
@@ -440,5 +408,5 @@ function changeGameSpeed(){
   // モード表記追加
   createListElement('chg_speed', changeSpeedFlg);
   // ランダムにスピードを決定(スピードは 400-800 で調整)
-  nowGameSpeed = Math.floor(Math.random() * 5) * 200;
+  nowGameSpeed = (Math.floor(Math.random() * 5) + 1) * 150;
 }
