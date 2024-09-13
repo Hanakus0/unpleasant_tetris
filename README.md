@@ -83,3 +83,8 @@ JavaScript を勉強していたため何か JavaScript で作品を作ってみ
 - https://www.youtube.com/watch?v=zKbektbiqac&list=PLa3BDwShqOrThKoaWauNo8EKZda4pat7Z&index=8
 - https://tokodomo.xyz/?p=126
 - https://jp-seemore.com/web/3864/#toc21
+
+---
+# 調査事項など
+- コンソールで次のようなエラーが表示される件について `Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received`
+  - Chromeの拡張機能が影響しているため。DeepL などが関わっている可能性がある。
