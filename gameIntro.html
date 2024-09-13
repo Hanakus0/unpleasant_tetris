@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    /* テトロミノセル（テーブル） */
+    #cell {
+      height: 25px;
+      width: 25px;
+      background-color: black;
+    }
+  </style>
+</head>
+<body>
+  <p style="color: red;">※本ゲームの独自な部分のみ言及しております。他要素はほぼオリジナルのテトリスと同様になっております。</p>
+  <h1>"不愉快なテトリス"について</h1>
+  <ul>
+    <li>スコアはゲーム終了後の'RETRY'ボタンを押下することで記録されます。</li>
+    <li>スマホには対応しておりません。</li>
+  </ul>
+
+  <!-- 歪なテトロミノギミック -->
+  <h1>1. 操作性がゴミになる操作キーランダム変更 モード</h1>
+  <div>ギミックフラグが立った場合に操作をカーソルキーからランダムに選ばれたアルファベットキーに変更するモード</div>
+  <div>キーボードで入力できる "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" の中から５つピックアップしてコントローラーキーとして変更する。</div>
+  <div>フォントのせいか大文字なのか小文字なのか分かりづらくなっており、プレイヤーの混乱を招く要素となっているのも素敵なエッセンス</div>
+  
+  <!-- 歪なテトロミノギミック -->
+  <h1>2. クソみたいな形のテトロミノが落ちてくる モード</h1>
+  <div>オリジナルのテトリスで登場するテトロミノ７種類に加えて、独自に作成したテトロミノ５種類を追加するモード</div>
+  <div>ギミックフラグが立った場合に合計１２種類のテトロミノの中からランダムで出現されるようになっております。</div>
+  <div>以下、独自で追加したテトロミノ５種類を紹介いたします。</div>
+  <h2>ビッグZ</h2>
+  <p>シンプルでありながら難易度を難しくするため採用。</p>
+  <p>２、３段目のブロックが連続していない部分がゲームにおいて厄介。</p>
+  <table border="1" style="border-collapse: collapse">
+    <tr>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+    </tr>
+  </table>
+  </br>
+  <h2>ビッグO</h2>
+  <p>ビッグZ同様、シンプルでありながら難易度を難しくするため採用。</p>
+  <p>テトリスにおいて中穴を空けることは致命的なのでこれが出てきたら詰む。</p>
+  <table border="1" style="border-collapse: collapse">
+    <tr>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td></td>
+      <td></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td></td>
+      <td></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+    </tr>
+  </table>
+</br>
+<h2>虫</h2>
+<p>ドラゴンクエストモンスターズに登場する"カバシラー"から着想を得た。</p>
+<p>ブロックが連続して構成されていない形なのでゲーム難易度を上げることに大変寄与している。</p>
+<p>この虫がゲームバランスを崩しているのかもしれない。若干後悔。</p>
+  <table border="1" style="border-collapse: collapse">
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+    </tr>
+  </table>
+  </br>
+  <h2>天ぷら</h2>
+  <p>何かカッコイイ形を作ろうと迷走した結果天ぷらが生まれた。</p>
+  <p>別に天ぷらを作りたかったわけではなかったものの難易度を上げてくれると感じたため採用。</p>
+  <p>ただカッコよくはない。</p>
+  <table border="1" style="border-collapse: collapse">
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+    </tr>
+  </table>
+  </br>
+  <h2>ゴミ</h2>
+  <p>何で作ったかは思い出せない。</p>
+  <p>箸にも棒にも掛からないゴミ。</p>
+  <p>残念な形。</p>
+  <table border="1" style="border-collapse: collapse">
+    <tr>
+      <td id="cell"></td>
+      <td></td>
+      <td></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td id="cell"></td>
+      <td></td>
+      <td id="cell"></td>
+    </tr>
+    <tr>
+      <td id="cell"></td>
+      <td></td>
+      <td id="cell"></td>
+      <td id="cell"></td>
+    </tr>
+  </table>
+  </br>
+  <!-- 歪なテトロミノギミック -->
+  <h1>3. (偽善) プレーヤーの目を保護するダークモード</h1>
+  <div>画面上のテトロミノのブロックとブロック枠線を黒色に近くするモード</div>
+  <div>自分が眼精疲労になりやすいせいで生まれたギミック。</div>
+  <div>全くもってダークモードとしては機能せず、完全なる自己満足な偽善。はた迷惑なギミック。</div>
+  <div>なんなら液晶の鮮明度よっては普通にプレイできてしまうため微妙なギミック</div>
+
+  <!-- 歪なテトロミノギミック -->
+  <h1>4. 【メリット皆無】 落下速度変調 モード</h1>
+  <div>テトロミノの落下速度をランダムに決定するモード</div>
+  <div>落下速度は 150ms ~ 750ms の値の幅でテトロミノ毎にランダムに決定</div>
+  <div>テトリスにおいて落下速度なんて遅ければ遅い程良いと思っている中で生まれたギミック</div>
+</body>
+</html>
+
